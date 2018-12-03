@@ -14,6 +14,7 @@
         "csa/guzzle-bundle": "~1.3",
         "cssjanus/cssjanus": "dev-patch-1",
         "curl/curl": "^1.2.1",
+        "cweagans/composer-patches": "^1.6",
         "defuse/php-encryption": "~2.0.1",
         "doctrine/cache": "^1.6",
         "doctrine/common": "~2.5.3",
@@ -196,6 +197,7 @@
         "sort-packages": true
     },
     "extra": {
+        "enable-patching": true,
         "symfony-app-dir": "app",
         "symfony-bin-dir": "bin",
         "symfony-var-dir": "var",
@@ -207,6 +209,11 @@
         },
         "scripts-description": {
             "create-release": "Create a release of PrestaShop, run the command with -h/--help argument for more information."
+        },
+        "patches": {
+            "swiftmailer/swiftmailer": {
+                "bug-mail-address": "patches/swiftmailer.patch"
+            }
         }
     },
     "authors": [

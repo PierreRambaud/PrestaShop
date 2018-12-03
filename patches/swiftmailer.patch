@@ -1,0 +1,26 @@
+diff --git a/lib/classes/Swift/Mime/Grammar.php b/lib/classes/Swift/Mime/Grammar.php
+index a09f3383..f72aeb87 100644
+--- a/lib/classes/Swift/Mime/Grammar.php
++++ b/lib/classes/Swift/Mime/Grammar.php
+@@ -81,7 +81,7 @@ class Swift_Mime_Grammar
+         self::$_grammar['quoted-string'] = '(?:'.self::$_grammar['CFWS'].'?"'.
+                 '('.self::$_grammar['FWS'].'?'.self::$_grammar['qcontent'].')*'.
+                 self::$_grammar['FWS'].'?"'.self::$_grammar['CFWS'].'?)';
+-        self::$_grammar['atext'] = '[a-zA-Z0-9!#\$%&\'\*\+\-\/=\?\^_`\{\}\|~]';
++        self::$_grammar['atext'] = '[a-zA-Z0-9!#\$%&\'\*\+\-\/=\?\^_`\{\}\|~\\p{L}]';
+         self::$_grammar['atom'] = '(?:'.self::$_grammar['CFWS'].'?'.
+                 self::$_grammar['atext'].'+'.self::$_grammar['CFWS'].'?)';
+         self::$_grammar['dot-atom-text'] = '(?:'.self::$_grammar['atext'].'+'.
+diff --git a/lib/classes/Swift/Mime/Headers/MailboxHeader.php b/lib/classes/Swift/Mime/Headers/MailboxHeader.php
+index e4567fc8..f7a69b9f 100644
+--- a/lib/classes/Swift/Mime/Headers/MailboxHeader.php
++++ b/lib/classes/Swift/Mime/Headers/MailboxHeader.php
+@@ -340,7 +340,7 @@ class Swift_Mime_Headers_MailboxHeader extends Swift_Mime_Headers_AbstractHeader
+      */
+     private function _assertValidAddress($address)
+     {
+-        if (!preg_match('/^'.$this->getGrammar()->getDefinition('addr-spec').'$/D',
++        if (!preg_match('/^'.$this->getGrammar()->getDefinition('addr-spec').'$/Du',
+             $address)) {
+             throw new Swift_RfcComplianceException(
+                 'Address in mailbox given ['.$address.
