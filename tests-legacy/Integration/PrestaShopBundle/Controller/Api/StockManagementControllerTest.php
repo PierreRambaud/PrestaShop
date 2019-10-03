@@ -184,7 +184,7 @@ class StockManagementControllerTest extends ApiTestCase
 
         /** @var \Symfony\Component\HttpFoundation\Response $response */
         $response = self::$client->getResponse();
-        $this->assertSame(200, $response->getStatusCode(), 'It should return a response with "OK" Status.');
+        $this->assertEquals(200, $response->getStatusCode(), 'It should return a response with "OK" Status.');
 
         if ($expectedTotalPages) {
             $this->assertResponseHasTotalPages($parameters, $expectedTotalPages);
