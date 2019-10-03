@@ -111,9 +111,11 @@ class ModuleController extends ModuleAbstractController
         }
 
         $filters = new AddonListFilter();
-        $filters->setType(AddonListFilterType::MODULE | AddonListFilterType::SERVICE)
-            ->removeStatus(AddonListFilterStatus::UNINSTALLED);
+        $filters->setType(AddonListFilterType::MODULE)
+            ->addType(AddonListFilterType::SERVICE)
+            ->setStatus(AddonListFilterStatus::INSTALLED);
         $installedProducts = $moduleRepository->getFilteredList($filters);
+
         $categories = $this->getCategories($modulesProvider, $installedProducts);
         $bulkActions = [
             'bulk-uninstall' => $this->trans('Uninstall', 'Admin.Actions'),

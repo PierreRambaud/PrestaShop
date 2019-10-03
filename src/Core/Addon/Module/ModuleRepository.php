@@ -234,34 +234,44 @@ class ModuleRepository implements ModuleRepositoryInterface
             // Part Two : Remove module not installed if specified
             if ($filter->status != AddonListFilterStatus::ALL) {
                 if ($module->database->get('installed') == 1
-                    && ($filter->hasStatus(AddonListFilterStatus::UNINSTALLED)
-                        || !$filter->hasStatus(AddonListFilterStatus::INSTALLED))) {
+                    && (
+                        $filter->hasStatus(AddonListFilterStatus::UNINSTALLED)
+                        || $filter->hasStatus(~AddonListFilterStatus::INSTALLED)
+                    )
+                ) {
                     unset($modules[$key]);
 
                     continue;
                 }
 
                 if ($module->database->get('installed') == 0
-                    && (!$filter->hasStatus(AddonListFilterStatus::UNINSTALLED)
-                        || $filter->hasStatus(AddonListFilterStatus::INSTALLED))) {
+                    && (
+                        $filter->hasStatus(~AddonListFilterStatus::UNINSTALLED)
+                        || $filter->hasStatus(AddonListFilterStatus::INSTALLED)
+                    )
+                ) {
                     unset($modules[$key]);
 
                     continue;
                 }
 
-                if ($module->database->get('installed') == 1
-                    && $module->database->get('active') == 1
-                    && !$filter->hasStatus(AddonListFilterStatus::DISABLED)
-                    && $filter->hasStatus(AddonListFilterStatus::ENABLED)) {
+                if ($module->database->get('active') == 1
+                    && (
+                        $filter->hasStatus(AddonListFilterStatus::DISABLED)
+                        || $filter->hasStatus(~AddonListFilterStatus::ENABLED)
+                    )
+                ) {
                     unset($modules[$key]);
 
                     continue;
                 }
 
-                if ($module->database->get('installed') == 1
-                    && $module->database->get('active') == 0
-                    && !$filter->hasStatus(AddonListFilterStatus::ENABLED)
-                    && $filter->hasStatus(AddonListFilterStatus::DISABLED)) {
+                if ($module->database->get('active') == 0
+                    && (
+                        $filter->hasStatus(~AddonListFilterStatus::DISABLED)
+                        || $filter->hasStatus(AddonListFilterStatus::ENABLED)
+                    )
+                ) {
                     unset($modules[$key]);
 
                     continue;

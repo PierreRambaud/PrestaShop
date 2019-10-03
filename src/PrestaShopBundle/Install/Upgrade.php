@@ -524,7 +524,7 @@ namespace PrestaShopBundle\Install {
 
             $filters = new AddonListFilter();
             $filters->setType(AddonListFilterType::MODULE)
-                ->removeStatus(AddonListFilterStatus::UNINSTALLED);
+                ->setStatus(AddonListFilterStatus::INSTALLED);
 
             $installedProducts = $moduleRepository->getFilteredList($filters);
             foreach ($installedProducts as $installedProduct) {

@@ -36,10 +36,6 @@ use PrestaShop\PrestaShop\Core\Addon\AddonListFilterStatus;
 use PrestaShop\PrestaShop\Core\Addon\AddonListFilterType;
 
 /**
- * @runInSeparateProcess
- * @runTestsInSeparateProcesses
- * @preserveGlobalState disabled
- *
  * Note theses annotations are required because we mock constants.
  */
 class ModuleRepositoryTest extends UnitTestCase
@@ -73,10 +69,20 @@ class ModuleRepositoryTest extends UnitTestCase
             ->getMock();
         $this->moduleDataProviderStub
             ->method('findByName')
-            ->willReturn(array(
-                'installed' => 0,
-                'active' => true,
-            ));
+            ->will(
+                $this->returnValueMap(
+                    [
+                        ['bankwire', ['installed' => 1, 'active' => true]],
+                        ['gamification', ['installed' => 1, 'active' => false]],
+                        ['ganalytics', ['installed' => 1, 'active' => false]],
+                        ['ps_banner', ['installed' => 1, 'active' => true]],
+                        ['ps_emailsubscription', ['installed' => 0, 'active' => false]],
+                        ['ps_featuredproducts', ['installed' => 0, 'active' => false]],
+                        ['cronjobs', ['installed' => 0, 'active' => false]],
+                    ]
+                )
+            );
+
         // required to have 'productType' field of module set up
         $this->moduleDataProviderStub
             ->method('isModuleMainClassValid')
@@ -163,6 +169,7 @@ class ModuleRepositoryTest extends UnitTestCase
         $all_modules = $this->moduleRepositoryStub->getList();
 
         $filters = new AddonListFilter();
+        $filters->setOrigin(AddonListFilterOrigin::ALL);
         $filters->setType(AddonListFilterType::MODULE)
             ->setStatus(AddonListFilterStatus::INSTALLED);
 
@@ -186,8 +193,9 @@ class ModuleRepositoryTest extends UnitTestCase
         $all_modules = $this->moduleRepositoryStub->getList();
 
         $filters = new AddonListFilter();
+        $filters->setOrigin(AddonListFilterOrigin::ALL);
         $filters->setType(AddonListFilterType::MODULE)
-            ->setStatus(~AddonListFilterStatus::INSTALLED);
+            ->setStatus(AddonListFilterStatus::UNINSTALLED);
 
         $not_installed_modules = $this->moduleRepositoryStub->getFilteredList($filters);
 
@@ -209,13 +217,14 @@ class ModuleRepositoryTest extends UnitTestCase
         $all_modules = $this->moduleRepositoryStub->getList();
 
         $filters = new AddonListFilter();
+        $filters->setOrigin(AddonListFilterOrigin::ALL);
         $filters->setType(AddonListFilterType::MODULE)
             ->setStatus(AddonListFilterStatus::ENABLED);
 
-        $installed_and_active_modules = $this->moduleRepositoryStub->getFilteredList($filters);
+        $active_modules = $this->moduleRepositoryStub->getFilteredList($filters);
 
         // Each module MUST have its database installed and enabled attributes as true
-        foreach ($installed_and_active_modules as $module) {
+        foreach ($active_modules as $key => $module) {
             $this->assertTrue($module->database->get('installed') == 1);
             $this->assertTrue($module->database->get('active') == 1);
         }
@@ -224,7 +233,7 @@ class ModuleRepositoryTest extends UnitTestCase
             // Each installed module must be found in the installed modules list
             if ($module->database->get('installed') == 1
                 && $module->database->get('active') == 1) {
-                $this->assertArrayHasKey($name, $installed_and_active_modules, sprintf('Module %s not found in the filtered list !', $name));
+                $this->assertArrayHasKey($name, $active_modules, sprintf('Module %s not found in the filtered list !', $name));
             }
         }
     }
@@ -234,8 +243,9 @@ class ModuleRepositoryTest extends UnitTestCase
         $all_modules = $this->moduleRepositoryStub->getList();
 
         $filters = new AddonListFilter();
+        $filters->setOrigin(AddonListFilterOrigin::ALL);
         $filters->setType(AddonListFilterType::MODULE)
-            ->setStatus(~AddonListFilterStatus::ENABLED);
+            ->setStatus(AddonListFilterStatus::DISABLED);
 
         $not_active_modules = $this->moduleRepositoryStub->getFilteredList($filters);
 
@@ -256,8 +266,10 @@ class ModuleRepositoryTest extends UnitTestCase
         $all_modules = $this->moduleRepositoryStub->getList();
 
         $filters = new AddonListFilter();
+        $filters->setOrigin(AddonListFilterOrigin::ALL);
         $filters->setType(AddonListFilterType::MODULE)
-            ->setStatus(AddonListFilterStatus::INSTALLED & ~AddonListFilterStatus::ENABLED);
+            ->setStatus(AddonListFilterStatus::INSTALLED)
+            ->addStatus(AddonListFilterStatus::DISABLED);
 
         $installed_but_not_installed_modules = $this->moduleRepositoryStub->getFilteredList($filters);
 
@@ -271,17 +283,6 @@ class ModuleRepositoryTest extends UnitTestCase
             if ($module->database->get('installed') == 1 && $module->database->get('active') == 0) {
                 $this->assertArrayHasKey($name, $installed_but_not_installed_modules, sprintf('Module %s not found in the filtered list !', $name));
             }
-        }
-    }
-
-    public function testGetAddonsFromMarketplaceOnly()
-    {
-        $filters = new AddonListFilter();
-        $filters->setOrigin(AddonListFilterOrigin::ADDONS_ALL);
-
-        // Each module must have its origin attribute
-        foreach ($this->moduleRepositoryStub->getFilteredList($filters) as $module) {
-            $this->assertTrue($module->attributes->has('origin'), $module->attributes->get('name').' has not an origin attribute');
         }
     }
 
@@ -317,16 +318,6 @@ class ModuleRepositoryTest extends UnitTestCase
 
         foreach ($this->moduleRepositoryStub->getFilteredList($filters) as $module) {
             $this->assertTrue($module->attributes->get('productType') == 'module', $module->attributes->get('name').' has a product type "'.$module->attributes->get('productType').'"');
-        }
-    }
-
-    public function testGetOnlyServices()
-    {
-        $filters = new AddonListFilter();
-        $filters->setType(AddonListFilterType::SERVICE);
-
-        foreach ($this->moduleRepositoryStub->getFilteredList($filters) as $module) {
-            $this->assertTrue($module->attributes->get('productType') == 'service');
         }
     }
 
