@@ -2841,7 +2841,7 @@ class AdminControllerCore extends Controller
             $this->context->employee->logout();
         }
         if (isset(Context::getContext()->cookie->last_activity)) {
-            if ($this->context->cookie->last_activity + max((int) Configuration::get('PS_COOKIE_LIFETIME_BO') * self::AUTH_COOKIE_LIFETIME, self::AUTH_COOKIE_LIFETIME) < time()) {
+            if ($this->context->cookie->last_activity + max((int) Configuration::get('PS_COOKIE_LIFETIME_BO') * self::AUTH_COOKIE_LIFETIME, _PS_DEFAULT_COOKIE_LIFETIME_) < time()) {
                 $this->context->employee->logout();
             } else {
                 $this->context->cookie->last_activity = time();
